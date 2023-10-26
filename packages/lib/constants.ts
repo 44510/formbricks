@@ -1,6 +1,7 @@
 import "server-only";
 import path from "path";
 import { env } from "@/env.mjs";
+import { unstable_cache } from "next/cache";
 
 export const IS_FORMBRICKS_CLOUD = env.IS_FORMBRICKS_CLOUD === "1";
 export const REVALIDATION_INTERVAL = 0; //TODO: find a good way to cache and revalidate data when it changes
@@ -72,3 +73,18 @@ export const LOCAL_UPLOAD_URL = {
   public: new URL(`${WEBAPP_URL}/api/v1/management/storage/local`).href,
   private: new URL(`${WEBAPP_URL}/api/v1/client/storage/local`).href,
 } as const;
+
+// Enterprise License constant
+export const FORMBRICKS_ENTERPRISE_LICENSE_KEY = env.FORMBRICKS_ENTERPRISE_LICENSE_KEY;
+
+export const getIsEnterpriseEdition = () =>
+  unstable_cache(
+    async () => {
+      if (FORMBRICKS_ENTERPRISE_LICENSE_KEY) {
+        return FORMBRICKS_ENTERPRISE_LICENSE_KEY?.length > 0;
+      }
+      return false;
+    },
+    ["isEE"],
+    { revalidate: 60 * 60 * 24 }
+  )();
