@@ -13,6 +13,7 @@ import { authOptions } from "@formbricks/lib/authOptions";
 import { getServerSession } from "next-auth";
 import { getTeamByEnvironmentId } from "@formbricks/lib/team/service";
 import { getMembershipByUserIdTeamId } from "@formbricks/lib/membership/service";
+import { getAccessFlags } from "@formbricks/lib/membership/utils";
 
 export default async function ProfileSettingsPage({ params }: { params: { environmentId: string } }) {
   const session = await getServerSession(authOptions);
@@ -30,8 +31,10 @@ export default async function ProfileSettingsPage({ params }: { params: { enviro
   }
 
   const currentUserMembership = await getMembershipByUserIdTeamId(session?.user.id, team.id);
-  const isBrandColorEditDisabled =
-    currentUserMembership?.role === "developer" ? true : currentUserMembership?.role === "viewer";
+  const { isDeveloper, isViewer } = getAccessFlags(
+    currentUserMembership?.role ? currentUserMembership?.role : ""
+  );
+  const isBrandColorEditDisabled = isDeveloper ? true : isViewer;
 
   return (
     <div>

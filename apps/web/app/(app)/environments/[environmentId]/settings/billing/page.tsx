@@ -11,6 +11,7 @@ import { notFound } from "next/navigation";
 import SettingsTitle from "../components/SettingsTitle";
 import PricingTable from "./components/PricingTable";
 import { ErrorComponent } from "@formbricks/ui/ErrorComponent";
+import { getAccessFlags } from "@formbricks/lib/membership/utils";
 
 export default async function ProfileSettingsPage({ params }) {
   if (!IS_FORMBRICKS_CLOUD) {
@@ -29,8 +30,8 @@ export default async function ProfileSettingsPage({ params }) {
   }
 
   const currentUserMembership = await getMembershipByUserIdTeamId(session?.user.id, team.id);
-  const isPricingDisabled =
-    currentUserMembership?.role !== "owner" ? currentUserMembership?.role !== "admin" : false;
+  const { isAdmin, isOwner } = getAccessFlags(currentUserMembership?.role ? currentUserMembership?.role : "");
+  const isPricingDisabled = isOwner ? isAdmin : false;
 
   return (
     <>
